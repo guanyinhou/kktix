@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        *{font-family: microsoft jhenghei;}
+        table{width: 100%;}
+        table th {
+            white-space: nowrap;
+            color: #fff;
+            background-color: #53b5c2;
+        }
+
+        table td,
+        table th {
+            border: 1px solid #ddd;
+            padding: 10px;
+        }
+        .sel-outer{position:absolute;left: 50%;transform: translateX(-50%);top: 0;}
+        .container {
+            width: 1200px;
+            margin: auto;
+        }
+        h4{display: inline-block;margin-top: 0;}
+        .pull-right{float: right;}
+        .relative{position: relative;}
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="title"></h1>
+        <div class="relative">
+            <h4>更新時間：<span id="updated"></span></h4>
+
+            <div class="sel-outer">請選擇日期：
+                <select name="" id="opt"></select>
+            </div>
+    
+            <div class="pull-right">搜尋結果：<span id="resultNum">100</span></div>
+        </div>
+
+        <div id="list"></div>
+    </div>
+
+    <script>
+        window.onload = function () {
+
+            var opt = document.getElementById("opt");
+
+            fetch("https://kktix.com/events.json")
+                .then(function (res) {
+                    return res.json();
+                }).then(function (result) {
+                    console.log(result);
+                    var title = document.getElementById('title');
+                    var updated = document.getElementById('updated');
+                    title.innerHTML = result.title;
+                    updated.innerHTML = result.updated.slice(0, 10);
+
+                    var tableTitle = ["編號", "名稱", "資訊", "內容", "網址"];
+
+                    var list = document.getElementById("list");
+                    var table = document.createElement("table");
+                    var thead = document.createElement("thead");
+                    var tbody = document.createElement("tbody");
+                    var trThead = document.createElement("tr");
+
+                    tableTitle.forEach(function (item) {
+                        var th = document.createElement("th");
+                        th.innerText = item;
+                        trThead.appendChild(th);
+                    })
+                    thead.appendChild(trThead);
+                    table.appendChild(thead);
+                    list.appendChild(table);
+
+                    // init
+                    var entries = result.entry;
+                    // console.log(entries)
+                    entries.forEach(function (entry, index) {
+                        // console.log(entry)
+                        var tr = document.createElement("tr");
+                        var tdNum = document.createElement("td");
+                        var tdName = document.createElement("td");
+                        var tdInfo = document.createElement("td");
+                        var tdContent = document.createElement("td");
+                        var tdUrl = document.createElement("td");
+                        tdNum.innerText = index + 1;
+                        tdName.innerText = entry.title;
+                        tdInfo.innerText = entry.content;
+                        tdContent.innerText = entry.summary;
+                        tdUrl.innerHTML = `<a href="${entry.url}">${entry.url}</a>`;
+                        tr.appendChild(tdNum);
+                        tr.appendChild(tdName);
+                        tr.appendChild(tdInfo);
+                        tr.appendChild(tdContent);
+                        tr.appendChild(tdUrl);
+                        tbody.appendChild(tr);
+                    })
+                    table.appendChild(tbody);
+                    list.appendChild(table);
+
+                    renderOpt(entries);
+                    changeOpt(entries);
+
+
+
+                    
+                })
+                .catch(function (err) {
+                    console.log(err);
+                })
+
+            function renderOpt(entries){
+                // console.log(entries)
+
+                // 篩選重複option
+                var duplicate = [];
+                var count = 0;
+                var start = false;
+
+                for(i=0;i<entries.length;i++){
+                    for(j=0;j<duplicate.length;j++){
+                        if(entries[i].published.slice(0,7) === duplicate[j].published.slice(0,7)){
+                            start = true;
+                        }
+                    }
+                    count++;
+                    if(count==1 && start == false){
+                        duplicate.push(entries[i])
+                    }
+                    start = false;
+                    count = 0;
+                }
+                // console.log(duplicate)
+
+                // 串接select
+                var monthHtml = '';
+
+                for(i=0;i<duplicate.length;i++){
+                    var edited = duplicate[i].published.slice(0,7);
+                    monthHtml+=`<option value="${edited}">${edited}</option>`;
+                }
+                opt.innerHTML = `<option disabled selected>請選擇</option>`+ monthHtml;
+
+                // monthHtml = "";
+                // entries.forEach(function(entry){;
+                //     var month = entry.content.slice(3,10)
+                //     // console.log(month);
+                //     monthHtml+=`<option value ="${month}">${month}</option>`; 
+                // })
+                // opt.innerHTML = monthHtml;
+            }
+
+            function renderList(value,entries){
+                // console.log(entries)
+                // console.log(value)
+                var listRenew = document.querySelector("tbody");
+                tbodyRenew = "";
+                // entries.forEach(function(entry){
+                    // console.log(entry)
+                    // console.log(compareStr)
+                    var matchObj = entries.filter(function(obj){
+                        return obj.published.slice(0,7) === value;
+                    })
+                    console.log(matchObj.length)
+                    var resultNum = document.getElementById("resultNum")
+                    for(var i=0;i<matchObj.length;i++){
+                        tbodyRenew+=
+                        `<tr>
+                            <td>${i+1}</td>
+                            <td>${matchObj[i].title}</td>
+                            <td>${matchObj[i].content}</td>
+                            <td>${matchObj[i].summary}</td>
+                            <td><a href="${matchObj[i].url}">${matchObj[i].url}</a></td>
+                        </tr>`;
+                    }
+                    listRenew.innerHTML = tbodyRenew;
+                    resultNum.innerText = matchObj.length;
+                // })
+
+            }
+
+            function changeOpt(entries){
+                opt.addEventListener("change", function(){
+                    // console.log(this.value);
+                    renderList(this.value,entries);
+                })
+            }
+        }
+    </script>
+</body>
+
+</html>
