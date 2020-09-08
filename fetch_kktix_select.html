@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.min.css'/>
     <style>
         *{font-family: microsoft jhenghei;}
         table{width: 100%;}
@@ -19,22 +20,38 @@
             border: 1px solid #ddd;
             padding: 10px;
         }
-        .sel-outer{position:absolute;left: 50%;transform: translateX(-50%);top: 0;}
-        .container {
-            width: 1200px;
-            margin: auto;
+        .sel-outer{
+            position:absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            top: 1px;
         }
-        h4{display: inline-block;margin-top: 0;}
+        h5{
+            display: inline-block;margin-top: 0;font-size: 1rem;
+        }
         .pull-right{float: right;}
         .relative{position: relative;}
+        @media(max-width: 768px){
+            .relative h5, .relative div{
+                position: relative;
+                display: block;
+                width: 100%;
+                margin-bottom: 8px;
+            }
+        }
+        @media(max-width: 480px){
+            #title{
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1 id="title"></h1>
+        <h1 id="title"></h1><br>
         <div class="relative">
-            <h4>更新時間：<span id="updated"></span></h4>
+            <h5>更新時間：<span id="updated"></span></h5>
 
             <div class="sel-outer">請選擇日期：
                 <select name="" id="opt"></select>
@@ -43,7 +60,9 @@
             <div class="pull-right">搜尋結果：<span id="resultNum">100</span></div>
         </div>
 
-        <div id="list"></div>
+        <div id="list" class="table-responsive table-bordered"></div>
+        <br>
+        <br>
     </div>
 
     <script>
